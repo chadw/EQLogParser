@@ -9,6 +9,7 @@
     <AssemblyName>EQLogParser.Utils</AssemblyName>
     <RootNamespace>EQLogParser</RootNamespace>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

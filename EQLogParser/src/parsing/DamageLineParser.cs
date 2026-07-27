@@ -43,6 +43,8 @@ namespace EQLogParser
 
     private static readonly string[] SpecialCodeKeys = ["Mana Burn", "Harm Touch", "Life Burn"];
 
+    // Swarm pets often appear in the log as normal generated pet names or as "Owner's pet".
+    // These markers are intentionally class-neutral so every class with swarm pets can be linked.
     private static OldCritData _lastCrit;
 
     public static void CheckSlainQueue(double currentTime)
@@ -683,7 +685,11 @@ namespace EQLogParser
       // EMU specific stuff
       // Old (eqemu direct damage) [Sat Jan 15 21:08:54 2022] Jaun hit Pixtt Invi Mal for 150 points of non-melee damage.
       // Heroes Forge EMU [Sun Dec 08 04:56:54 2024] Lobekn (Owner: Bulron) hit a wan ghoul knight for 311 points of non-melee damage. (Earthquake)
-      else if (AppSettings.IsEmuParsingEnabled && forIndex > -1 && hitTypeIndex > -1 && split[hitTypeIndex] == "hit" && forIndex < pointsOfIndex && nonMeleeIndex > pointsOfIndex)
+      else if (forIndex > -1 &&
+         hitTypeIndex > -1 &&
+         split[hitTypeIndex] == "hit" &&
+         forIndex < pointsOfIndex &&
+         nonMeleeIndex > pointsOfIndex)
       {
         string attackerOwner = null;
         if (emuPetIndex > -1)
@@ -853,8 +859,8 @@ namespace EQLogParser
         killer = killer.Length > 1 && killer[^1] == '!' ? killer[..^1] : killer;
         var slain = ParserUtil.JoinWords(split, 0, isIndex);
         UpdateSlain(slain, killer, lineData);
-        CheckOwner(slain, out _);
-        CheckOwner(killer, out _);
+        CheckOwner(slain, out _, lineData.BeginTime);
+        CheckOwner(killer, out _, lineData.BeginTime);
       }
       // [Sun Apr 18 21:26:20 2021] Strangle`s pet has been slain by Kzerk!
       // Older slain message for npcs
@@ -864,8 +870,8 @@ namespace EQLogParser
         killer = killer.Length > 1 && killer[^1] == '!' ? killer[..^1] : killer;
         var slain = ParserUtil.JoinWords(split, 0, hasIndex);
         UpdateSlain(slain, killer, lineData);
-        CheckOwner(slain, out _);
-        CheckOwner(killer, out _);
+        CheckOwner(slain, out _, lineData.BeginTime);
+        CheckOwner(killer, out _, lineData.BeginTime);
       }
       // [Mon Apr 19 02:22:09 2021] You have been slain by an armed flyer!
       else if (!checkLineType && stop > 4 && slainIndex == 3 && byIndex == 4 && isYou && split[1] == "have" && split[2] == "been")
@@ -1073,8 +1079,8 @@ namespace EQLogParser
         }
 
         // check for pets
-        CheckOwner(attacker, out var attackerOwner);
-        CheckOwner(defender, out var defenderOwner);
+        CheckOwner(attacker, out var attackerOwner, currentTime);
+        CheckOwner(defender, out var defenderOwner, currentTime);
 
         if (attacker.Length <= 64 && defender.Length <= 64)
         {
@@ -1096,25 +1102,76 @@ namespace EQLogParser
       return record;
     }
 
-    private static void CheckOwner(string name, out string owner)
+    private static void CheckOwner(string name, out string owner, double currentTime)
     {
       owner = null;
-      if (!string.IsNullOrEmpty(name))
+      if (string.IsNullOrEmpty(name))
       {
-        var pIndex = name.IndexOf("`s ", StringComparison.Ordinal);
-        if ((pIndex > -1 && IsPet(name, pIndex + 3, out _)) || (pIndex = name.LastIndexOf(" pet", StringComparison.Ordinal)) > -1)
+        return;
+      }
+
+      // Project Lazarus wizard epic swarm pets show in damage lines as:
+      //   Eyehop's pet slashes a training dummy...
+      //   Eyehop`s pet hits a training dummy...
+      // Do not require the owner to already be a verified player here. Some swarm-pet-only
+      // damage can arrive before the owner has been verified by another parser path.
+      if (TryGetPossessivePetOwner(name, out var player))
+      {
+        owner = player;
+        PlayerRegistry.Instance.AddPetToPlayer(name, owner);
+        return;
+      }
+
+      owner = PlayerRegistry.Instance.GetPlayerFromPet(name);
+      if (owner == Labels.Unassigned)
+      {
+        owner = null;
+      }
+    }
+
+    private static bool TryGetPossessivePetOwner(string name, out string owner)
+    {
+      owner = null;
+
+      if (string.IsNullOrWhiteSpace(name))
+      {
+        return false;
+      }
+
+      // Accept both Project Lazarus forms:
+      //   Owner's pet
+      //   Owner`s pet
+      // Also keep ward/warder support for other classes.
+      foreach (var possessive in new[] { "`s ", "'s ", "’s " })
+      {
+        var pIndex = name.IndexOf(possessive, StringComparison.Ordinal);
+        if (pIndex <= 0)
         {
-          if (PlayerRegistry.IsPossiblePlayerName(name, pIndex))
-          {
-            var player = name[..pIndex];
-            if (PlayerRegistry.Instance.IsVerifiedPlayer(player))
-            {
-              owner = player;
-              PlayerRegistry.Instance.AddPetToPlayer(name, owner);
-            }
-          }
+          continue;
+        }
+
+        var possibleOwner = name[..pIndex];
+        var petPartStart = pIndex + possessive.Length;
+
+        if (PlayerRegistry.IsPossiblePlayerName(possibleOwner)
+          && IsPet(name, petPartStart, out var petLen)
+          && IsPetNameBoundary(name, petPartStart + petLen))
+        {
+          owner = possibleOwner;
+          return true;
         }
       }
+
+      return false;
+    }
+
+    private static bool IsPetNameBoundary(string name, int index)
+    {
+      // Exact pet name or pet name followed by common suffix/punctuation/number.
+      return index >= name.Length
+        || char.IsWhiteSpace(name[index])
+        || char.IsDigit(name[index])
+        || name[index] is '.' or ',' or '!' or ':' or ';' or '-' or '_';
     }
 
     private static bool IsPet(string part, int start, out int len)

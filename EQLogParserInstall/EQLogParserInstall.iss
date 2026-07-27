@@ -5,14 +5,14 @@
   #define IncludePiperTTS 0
 #endif
 
-#define MyAppName "EQLogParser"
-#define MyAppVersion "2.3.58"
+#define MyAppName "EQLogParser Project Lazarus Edition"
+#define MyAppVersion "1.0.10.0"
 #define MyAppPublisher "Kizant"
 #define MyAppURL "https://github.com/kauffman12/EQLogParser"
 #define MyAppExeName "EQLogParser.exe"
-#define MyReleaseDir "C:\Users\kauff\code\github\EQLogParser\EQLogParser\bin\Release\net8.0-windows10.0.17763.0"
+#define MyReleaseDir "D:\EQLogParser\EQLogParser\bin\x64\Release\net8.0-windows10.0.17763.0"
 ;#define MyReleaseDir "C:\Users\kauff\code\github\EQLogParser\EQLogParser\bin\Debug\net8.0-windows10.0.17763.0"
-#define MySrcDir "C:\Users\kauff\code\github\EQLogParser\EQLogParser"
+#define MySrcDir "D:\EQLogParser\EQLogParser"
 #define BackupUtilDir "C:\Users\kauff\code\github\EQLogParser\BackupUtil\bin\Release\net8.0-windows10.0.17763.0"
 
 [Setup]

@@ -194,6 +194,17 @@ namespace EQLogParser
                 spell = part.Substring(byIndex + 4, periodIndex - byIndex - 4);
               }
             }
+            else
+            {
+              // Lazarus format:
+              // Dorfus has healed Eyehop for 4937 points of damage. (Wave of Piety)
+              var openParen = part.LastIndexOf(" (", StringComparison.Ordinal);
+              if (openParen > -1 && part.EndsWith(')'))
+              {
+                spell = part[(openParen + 2)..^1];
+                subType = spell;
+              }
+            }
           }
         }
 
