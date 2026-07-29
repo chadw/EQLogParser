@@ -40,6 +40,7 @@ namespace EQLogParser
     private static readonly ConcurrentDictionary<string, bool> RecentSpellCache = [];
     private readonly ConcurrentDictionary<string, bool> _validCombo = [];
     private readonly Dictionary<DamageRecord, DamageRecord> _damageCache = [];
+    private readonly ConcurrentDictionary<string, byte> _announcedFights = new();
     private const int RecentSpellTime = 300;
 
     internal FightManager()
@@ -94,14 +95,24 @@ namespace EQLogParser
       if (_activeFights.TryRemove(name, out var fight))
       {
         fight.Dead = true;
+        _announcedFights.TryRemove(name, out _);
       }
     }
 
     public void UpdateIfNewFightMap(string name, Fight fight, bool isNonTankingFight)
     {
       _lifetimeFights[name] = 1;
+      _activeFights.TryAdd(name, fight);
 
-      if (_activeFights.TryAdd(name, fight))
+      // Don't announce to the UI until the fight has at least one player-side damage hit.
+      // This prevents tanking-only (NPC hits player, player never retaliates) and
+      // "Unknown" attacker fights from appearing in the fight list with "-" damage.
+      if (fight.DamageHits == 0)
+      {
+        return;
+      }
+
+      if (_announcedFights.TryAdd(name, 1))
       {
         EventsNewFight?.Invoke(fight);
       }
@@ -116,15 +127,12 @@ namespace EQLogParser
         EventsNewNonTankingFight?.Invoke(fight);
       }
 
-      if (fight.DamageHits > 0)
-      {
-        _overlayFights[fight.Id] = fight;
+      _overlayFights[fight.Id] = fight;
 
-        // don't bother if not configured (lazy optimization)
-        if (ConfigUtil.IfSet("IsDamageOverlayEnabled"))
-        {
-          EventsNewOverlayFight?.Invoke(fight);
-        }
+      // don't bother if not configured (lazy optimization)
+      if (ConfigUtil.IfSet("IsDamageOverlayEnabled"))
+      {
+        EventsNewOverlayFight?.Invoke(fight);
       }
     }
 
@@ -160,6 +168,7 @@ namespace EQLogParser
       _activeFights.Clear();
       _lifetimeFights.Clear();
       _overlayFights.Clear();
+      _announcedFights.Clear();
       _damageCache.Clear();
       _validCombo.Clear();
       RecentSpellCache.Clear();
@@ -185,6 +194,7 @@ namespace EQLogParser
       {
         var removed = _activeFights.TryRemove(name, out _);
         removed = _lifetimeFights.TryRemove(name, out _) || removed;
+        _announcedFights.TryRemove(name, out _);
 
         if (removed)
         {
