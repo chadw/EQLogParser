@@ -104,7 +104,16 @@ namespace EQLogParser
       _lifetimeFights[name] = 1;
       _activeFights.TryAdd(name, fight);
 
-      // Don't announce to the UI until the fight has at least one player-side damage hit.
+      // Always track in overlay so the damage/tank overlay reflects all active fights.
+      _overlayFights[fight.Id] = fight;
+
+      // don't bother if not configured (lazy optimization)
+      if (ConfigUtil.IfSet("IsDamageOverlayEnabled"))
+      {
+        EventsNewOverlayFight?.Invoke(fight);
+      }
+
+      // Don't announce to the fight list until the fight has at least one player-side damage hit.
       // This prevents tanking-only (NPC hits player, player never retaliates) and
       // "Unknown" attacker fights from appearing in the fight list with "-" damage.
       if (fight.DamageHits == 0)
@@ -126,14 +135,6 @@ namespace EQLogParser
       {
         EventsNewNonTankingFight?.Invoke(fight);
       }
-
-      _overlayFights[fight.Id] = fight;
-
-      // don't bother if not configured (lazy optimization)
-      if (ConfigUtil.IfSet("IsDamageOverlayEnabled"))
-      {
-        EventsNewOverlayFight?.Invoke(fight);
-      }
     }
 
     internal void ResetOverlayFights(bool active = false, bool deadAlso = false)
@@ -150,7 +151,9 @@ namespace EQLogParser
       var removeList = new List<long>();
       foreach (var fight in _overlayFights.Values)
       {
-        if (fight != null && (groupId == -1 || fight.GroupId != groupId || (deadAlso && fight.Dead)))
+        if (fight == null || (!fight.Dead && fight.GroupId == 0)) continue;
+
+        if (groupId == -1 || fight.GroupId != groupId || (deadAlso && fight.Dead))
         {
           fight.PlayerDamageTotals.Clear();
           fight.PlayerTankTotals.Clear();
