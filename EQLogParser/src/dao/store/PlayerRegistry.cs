@@ -618,6 +618,8 @@ namespace EQLogParser
       IsPossiblePlayerName(name)
       || name?.EndsWith("`s pet", StringComparison.OrdinalIgnoreCase) == true
       || name?.EndsWith("'s pet", StringComparison.OrdinalIgnoreCase) == true
+      || name?.EndsWith("`s doppelganger", StringComparison.OrdinalIgnoreCase) == true
+      || name?.EndsWith("'s doppelganger", StringComparison.OrdinalIgnoreCase) == true
       || name?.EndsWith("`s ward", StringComparison.OrdinalIgnoreCase) == true
       || name?.EndsWith("'s ward", StringComparison.OrdinalIgnoreCase) == true
       || name?.EndsWith("`s warder", StringComparison.OrdinalIgnoreCase) == true

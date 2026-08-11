@@ -180,6 +180,7 @@ namespace EQLogParser
       if (dataGrid.SelectedItem is PlayerStats stats && sender is MenuItem { Header: string header })
       {
         PlayerRegistry.Instance.AddPetToPlayer(stats.OrigName, header);
+        PlayerRegistry.Instance.Save();
       }
     }
 
