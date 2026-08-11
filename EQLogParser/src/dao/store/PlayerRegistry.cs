@@ -32,10 +32,10 @@ namespace EQLogParser
 
     private readonly ConcurrentDictionary<string, string> _defaultPlayerClass = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, byte> _gameGeneratedPets = new();
-    private readonly ConcurrentDictionary<string, string> _petToPlayer = new();
+    private readonly ConcurrentDictionary<string, string> _petToPlayer = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, ActivePlayerClass> _activePlayerClass = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, byte> _takenPetOrPlayerAction = new();
-    private readonly ConcurrentDictionary<string, byte> _verifiedPets = new();
+    private readonly ConcurrentDictionary<string, byte> _verifiedPets = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, double> _verifiedPlayers = new();
     private readonly ConcurrentDictionary<string, byte> _mercs = new(StringComparer.OrdinalIgnoreCase);
     private readonly Timer _saveTimer;

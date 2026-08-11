@@ -6,14 +6,13 @@
 #endif
 
 #define MyAppName "EQLogParser Project Lazarus Edition"
-#define MyAppVersion "1.0.10.0"
+#define MyAppVersion "1.0.11.0"
 #define MyAppPublisher "Kizant"
-#define MyAppURL "https://github.com/kauffman12/EQLogParser"
+#define MyAppURL "https://github.com/chadw/EQLogParser"
 #define MyAppExeName "EQLogParser.exe"
 #define MyReleaseDir "D:\EQLogParser\EQLogParser\bin\x64\Release\net8.0-windows10.0.17763.0"
-;#define MyReleaseDir "C:\Users\kauff\code\github\EQLogParser\EQLogParser\bin\Debug\net8.0-windows10.0.17763.0"
 #define MySrcDir "D:\EQLogParser\EQLogParser"
-#define BackupUtilDir "C:\Users\kauff\code\github\EQLogParser\BackupUtil\bin\Release\net8.0-windows10.0.17763.0"
+#define BackupUtilDir "D:\EQLogParser\BackupUtil\bin\x64\Release\net8.0-windows10.0.17763.0"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -44,7 +43,7 @@ MinVersion=10.0
 UninstallDisplayIcon={#MySrcDir}\src\ui\main\EQLogParser.ico
 Compression=lzma
 SolidCompression=yes
-SignTool=signtool
+;SignTool=signtool
 WizardImageFile=background.bmp
 WizardSmallImageFile=graphic.bmp
 WizardStyle=modern
@@ -56,73 +55,13 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; If include PiperTTS
+; Copy entire release output to avoid dependency drift between builds.
+; Piper TTS remains optional via IncludePiperTTS.
 #if IncludePiperTTS
-Source: "{#MyReleaseDir}\piper-tts\*"; DestDir: "{app}\piper-tts"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyReleaseDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+#else
+Source: "{#MyReleaseDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "piper-tts\*"
 #endif
-
-Source: "{#MyReleaseDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\DotLiquid.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\EQLogParser.deps.json"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\EQLogParser.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\EQLogParser.Audio.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\EQLogParser.Utils.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\EQLogParser.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\EQLogParser.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\FontAwesome5.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\FontAwesome5.Net.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\LiteDB.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\log4net.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Microsoft.WindowsAPICodePack.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Microsoft.WindowsAPICodePack.Shell.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Microsoft.Windows.SDK.NET.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Riok.Mapperly.Abstractions.dll"; DestDir: "{app}"; Flags: ignoreversion
-
-; .NET Memory Caching and Dependency Injection
-Source: "{#MyReleaseDir}\Microsoft.Extensions.Caching.Abstractions.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Microsoft.Extensions.Caching.Memory.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Microsoft.Extensions.DependencyInjection.Abstractions.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Microsoft.Extensions.Logging.Abstractions.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Microsoft.Extensions.ObjectPool.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Microsoft.Extensions.Options.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Microsoft.Extensions.Primitives.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\System.Diagnostics.DiagnosticSource.dll"; DestDir: "{app}"; Flags: ignoreversion
-
-Source: "{#MyReleaseDir}\NAudio.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\NAudio.Core.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\NAudio.Wasapi.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\NAudio.WinMM.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\SoundTouch.Net.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\SoundTouch.Net.NAudioSupport.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.Compression.Base.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.Data.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.DocIO.Base.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.Edit.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.GridCommon.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.Licensing.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.OfficeChart.Base.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.PropertyGrid.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.SfBusyIndicator.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.SfChart.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.SfGrid.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.SfGridCommon.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.SfInput.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.SfProgressBar.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.SfSkinManager.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.SfTreeView.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.Shared.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.Themes.MaterialDark.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.Themes.MaterialDarkCustom.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.Themes.MaterialLight.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.Tools.WPF.Classic.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\Syncfusion.Tools.WPF.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\System.Private.ServiceModel.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\System.ServiceModel.Primitives.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\System.Drawing.Common.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\WinRT.Runtime.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\WpfAnimatedGif.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\runtimes\win\lib\net8.0\System.Speech.dll"; DestDir: "{app}\runtimes\win\lib\net8.0"; Flags: ignoreversion
-Source: "{#MyReleaseDir}\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#BackupUtilDir}\BackupUtil.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BackupUtilDir}\BackupUtil.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BackupUtilDir}\BackupUtil.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion
@@ -195,9 +134,7 @@ var
   OkButton: TButton;
 begin
   // Create the form
-  Form := CreateCustomForm;
-  Form.ClientWidth := ScaleX(358);
-  Form.ClientHeight := ScaleY(118);
+  Form := CreateCustomForm(ScaleX(358), ScaleY(118), False, False);
   Form.Font.Size := 10
   Form.Caption := 'Additional Components Required';
   Form.Position := poScreenCenter;
@@ -251,13 +188,13 @@ begin
   Log('Creating cmd file for checking dotnet version')
   // Determine the full path to the batch file in the temporary directory
   CmdFileName := ExpandConstant('{tmp}\CheckDotNetVersion.cmd');
-  
+
   // Initialize TStringList and add the commands
   BatchCommands := TStringList.Create;
   try
     BatchCommands.Add('@echo off');
     BatchCommands.Add('dotnet --list-runtimes > "' + ExpandConstant('{tmp}\dotnet_runtimes.txt') + '"');
-    
+
     Log('Saving dotnet versions to file')
     // Write the commands to the batch file
     BatchCommands.SaveToFile(CmdFileName);

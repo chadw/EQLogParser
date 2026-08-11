@@ -69,7 +69,7 @@ namespace EQLogParser
             // [Thu Jan 27 16:32:01 2022] [1 Warrior] Spasiba(Gnome)  ZONE: The Bazaar(bazaar)
             // [Thu Jan 27 16:32:01 2022] [120 Shadowblade (Rogue)] Bloodydagger(Iksar) < Realm of Insanity> ZONE: Realm of Insanity Village III, 200 Terminus Heights, Palatial Guild Hall
             // [Wed Jan 26 22:41:48 2022] [65 Overlord (Warrior)] Jenfo (Halfling)
-            // [Mon Jan 05 10:03:10 2026]  AFK [67 Dread Lord (Shadow Knight)] Matrim (Iksar) <Realm of Insanity> ZONE: Realm of Insanity Village III, 200 Terminus Heights, Palatial Guild Hall 
+            // [Mon Jan 05 10:03:10 2026]  AFK [67 Dread Lord (Shadow Knight)] Matrim (Iksar) <Realm of Insanity> ZONE: Realm of Insanity Village III, 200 Terminus Heights, Palatial Guild Hall
             // [Fri Jan 23 19:56:17 2026] [130 Juggernaut (Berserker)] Grudg (Group: 3)
             // [Fri Jan 23 19:34:53 2026] [130 Bloodreaver (Shadow Knight)] Waaine (Group: None)
             else if (i == 0 &&
@@ -347,6 +347,7 @@ namespace EQLogParser
 
           // old eqemu looted items
           // [Fri Jan 14 21:05:46 2022] --Triplex has looted a Muramite Sleeve Armor.--
+          // [Sun Aug 09 17:08:38 2026] --Mytoon has looted a Superb Silk (x2).--
           if (!handled)
           {
             if (!string.IsNullOrEmpty(looter) && lootedIndex == 2 && split.Length > 4)
@@ -355,7 +356,20 @@ namespace EQLogParser
               if (item.Length > 3 && item.EndsWith(".--", StringComparison.OrdinalIgnoreCase))
               {
                 // covers "a" or "an"
-                var count = split[3][0] == 'a' ? 1 : ParserUtil.ParseUInt(split, 3); item = item[..^3];
+                var count = split[3][0] == 'a' ? 1 : ParserUtil.ParseUInt(split, 3);
+                item = item[..^3];
+
+                // extract (xN) quantity suffix e.g. "Superb Silk (x2)"
+                if (item.EndsWith(')'))
+                {
+                  var xIdx = item.LastIndexOf("(x", StringComparison.OrdinalIgnoreCase);
+                  if (xIdx > 0 && uint.TryParse(item[(xIdx + 2)..^1], out var qty))
+                  {
+                    count = qty;
+                    item = item[..xIdx].TrimEnd();
+                  }
+                }
+
                 if (count > 0 && count != ushort.MaxValue)
                 {
                   PlayerRegistry.Instance.AddVerifiedPlayer(looter, lineData.BeginTime);

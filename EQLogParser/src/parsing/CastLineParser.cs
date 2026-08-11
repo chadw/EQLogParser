@@ -9,6 +9,19 @@ namespace EQLogParser
   {
     private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod()?.DeclaringType);
     private static readonly char[] OldSpellChars = ['<', '>'];
+    private static readonly string[] CharmMarkers =
+    [
+      "has been charmed",
+      "is charmed",
+      "you have been charmed",
+      "you are no longer charmed",
+      "you lose control of yourself",
+      "you regain control",
+      "body refuses to obey",
+      "you are enthralled",
+      "you are compelled",
+      "succumbed"
+    ];
 
     private static readonly Dictionary<string, string> SpecialCastCodes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -232,10 +245,27 @@ namespace EQLogParser
         return true;
       }
 
+      // Explicit charm text fallback for logs that don't resolve via spell trees.
+      // Example: "A goblin priest is charmed."
+      if (TryMapDirectCharmTarget(split, out var charmTarget))
+      {
+        if (!PlayerRegistry.Instance.IsVerifiedPlayer(charmTarget))
+        {
+          PlayerRegistry.Instance.AddPetToPlayer(charmTarget, ConfigUtil.PlayerName);
+        }
+
+        return true;
+      }
+
       // lands on other
       if (EQDataStore.Instance.TryGetLandsOnOther(split, out searchResult, out var target))
       {
         AddReceived(target, searchResult);
+
+        if (!PlayerRegistry.Instance.IsVerifiedPlayer(target) && IsCharmEffect(searchResult.SpellData))
+        {
+          PlayerRegistry.Instance.AddPetToPlayer(target, ConfigUtil.PlayerName);
+        }
 
         // if it's a pet spell, add the pet to the registry so we can track it better
         if (searchResult.SpellData[0].Target == (int)SpellTarget.Pet || searchResult.SpellData[0].Target == (int)SpellTarget.Pet2)
@@ -270,6 +300,88 @@ namespace EQLogParser
         }
 
         RecordsStore.Instance.Add(newSpell, beginTime);
+      }
+
+      return false;
+    }
+
+    private static bool IsCharmSpell(SpellData spellData)
+    {
+      if (spellData is null)
+      {
+        return false;
+      }
+
+      return ContainsCharmMarker(spellData.LandsOnOther)
+        || ContainsCharmMarker(spellData.LandsOnYou)
+        || ContainsCharmMarker(spellData.WearOff);
+    }
+
+    private static bool TryMapDirectCharmTarget(string[] split, out string target)
+    {
+      target = null;
+
+      if (split is not { Length: >= 3 })
+      {
+        return false;
+      }
+
+      var last = split.Length - 1;
+      if (!split[last].Equals("charmed.", StringComparison.OrdinalIgnoreCase))
+      {
+        return false;
+      }
+
+      int targetLen;
+      if (split[last - 1].Equals("is", StringComparison.OrdinalIgnoreCase))
+      {
+        targetLen = last - 1;
+      }
+      else if (split.Length >= 4 && split[last - 1].Equals("been", StringComparison.OrdinalIgnoreCase) &&
+        split[last - 2].Equals("has", StringComparison.OrdinalIgnoreCase))
+      {
+        targetLen = last - 2;
+      }
+      else
+      {
+        return false;
+      }
+
+      target = targetLen > 0 ? string.Join(" ", [.. split], 0, targetLen) : null;
+      return !string.IsNullOrWhiteSpace(target);
+    }
+
+    private static bool IsCharmEffect(List<SpellData> spellData)
+    {
+      if (spellData is null)
+      {
+        return false;
+      }
+
+      foreach (var data in spellData)
+      {
+        if (IsCharmSpell(data))
+        {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    private static bool ContainsCharmMarker(string value)
+    {
+      if (string.IsNullOrEmpty(value))
+      {
+        return false;
+      }
+
+      foreach (var marker in CharmMarkers)
+      {
+        if (value.Contains(marker, StringComparison.OrdinalIgnoreCase))
+        {
+          return true;
+        }
       }
 
       return false;
