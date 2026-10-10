@@ -248,7 +248,10 @@ namespace EQLogParser
 
     private void ProcessNonTankingFight(Fight fight)
     {
-      lock (_fightsToProcess) _nonTankingFightsToProcess.Add(fight);
+      lock (_nonTankingFightsToProcess)
+      {
+        _nonTankingFightsToProcess.Add(fight);
+      }
     }
 
     private void DoProcessFights()

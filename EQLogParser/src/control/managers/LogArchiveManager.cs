@@ -198,12 +198,16 @@ namespace EQLogParser
         var fileInfo = new FileInfo(path);
         var creationTime = fileInfo.CreationTimeUtc;
 
-        if (creationTime > DateTime.UtcNow.Subtract(TimeSpan.FromDays(ArchiveFileAges[savedFileAge])))
-        {
-          continue;
-        }
+        // Archive when the file meets the selected size OR age criteria.
+        // Treat "Any Size" (sizeThreshold == 0) and "Any Age" (ageDays == 0) as "no constraint" for that criterion.
+        var ageDays = ArchiveFileAges[savedFileAge];
+        var sizeThreshold = ArchiveFileSizes[savedFileSize];
 
-        if (fileInfo.Length < ArchiveFileSizes[savedFileSize])
+        var qualifiesByAge = ageDays > 0 && creationTime <= DateTime.UtcNow.Subtract(TimeSpan.FromDays(ageDays));
+        var qualifiesBySize = sizeThreshold > 0 && fileInfo.Length >= sizeThreshold;
+
+        // Only archive if at least one explicit criterion is satisfied. If both are set to "Any", skip.
+        if (!qualifiesByAge && !qualifiesBySize)
         {
           continue;
         }
@@ -305,7 +309,7 @@ namespace EQLogParser
       await Task.Delay(100);
     }
 
-    [GeneratedRegex(@"^eqlog_([a-zA-Z]+)_([a-zA-Z]+)(?!.*\d).*\.txt$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"^eqlog_([^_]+)_(.+?)(?:-selected)?(?:_\d{8}(?:\d{4})?_\d+)?\.(txt|log)(?:\.gz)?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex TheFileNameToArchiveRegex();
   }
 }

@@ -1001,6 +1001,35 @@ namespace EQLogParser
             ConfigUtil.ServerName = server;
             ConfigUtil.PlayerName = name;
 
+            // log file size warning
+            try
+            {
+              var fi = new FileInfo(theFile);
+              const long LargeThreshold = 500L * 1024 * 1024; // 500 MB
+              if (fi.Length >= LargeThreshold)
+              {
+                var sizeMb = fi.Length / (1024.0 * 1024.0);
+                var msg = $"Selected log file size: {sizeMb:F1} MB\n\nLoading large log files can cause in-game lag and poor trigger performance. It's recommended to set up log maintenance to archive old logs.\n\nOpen Log Management to configure maintenance, or continue loading?";
+                var mw = new MessageWindow(msg, "Large Log File", MessageWindow.IconType.Question, "Continue", "Open Log Management");
+                mw.ShowDialog();
+
+                if (mw.IsYes2Clicked)
+                {
+                  var mg = new LogManagementWindow();
+                  mg.ShowDialog();
+                  return;
+                }
+
+                if (!mw.IsYes1Clicked)
+                {
+                  return;
+                }
+              }
+            }
+            catch (Exception)
+            {
+            }
+
             if (changed)
             {
               // update pet/player windows all at once

@@ -230,27 +230,39 @@ namespace EQLogParser
 
     internal string GetLastKnownPlayerClass(string name)
     {
+      var defaultClass = GetDefaultPlayerClass(name);
+      if (!string.IsNullOrEmpty(defaultClass))
+      {
+        return defaultClass;
+      }
+
       if (string.IsNullOrEmpty(name) || !_activePlayerClass.TryGetValue(name, out var active))
-        return GetDefaultPlayerClass(name);
+        return string.Empty;
 
       lock (active)
       {
         var records = active.Records;
-        return records.Count > 0 ? records[^1].ClassName : GetDefaultPlayerClass(name);
+        return records.Count > 0 ? records[^1].ClassName : string.Empty;
       }
     }
 
     internal string GetPlayerClass(string name, double t)
     {
+      var defaultClass = GetDefaultPlayerClass(name);
+      if (!string.IsNullOrEmpty(defaultClass))
+      {
+        return defaultClass;
+      }
+
       if (string.IsNullOrEmpty(name) || !_activePlayerClass.TryGetValue(name, out var active))
-        return GetDefaultPlayerClass(name);
+        return string.Empty;
 
       ClassRecord[] snapshot;
       lock (active)
       {
         if (active.Records.Count == 0)
         {
-          return GetDefaultPlayerClass(name);
+          return string.Empty;
         }
 
         snapshot = [.. active.Records];
