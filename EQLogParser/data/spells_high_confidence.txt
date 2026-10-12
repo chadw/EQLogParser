@@ -1,0 +1,93 @@
+﻿Chromablast=CLR
+Hand of Retribution Recourse=CLR
+Vigilant Condemnation=CLR
+Word of Vivification=CLR
+Supernal Remedy=CLR
+Ancient: Sacred Remedy=CLR
+Recourse of Life=CLR
+
+Curse of the Spirits=SHM
+Blood of Volkara=SHM
+Transcendent Torpor=SHM
+Ancient: Emoush's Mending=SHM
+
+Sun's Blistering Corona=DRU
+Breath of The Ascent=DRU
+Wrath of Nature=DRU
+Group Spirit of the Wolf Pack=DRU
+Dawnflame=DRU
+Sunburst Devotion=DRU
+Tempest of the Seasons=DRU
+Lunar Shadow=DRU
+
+
+Molten Pyre=NEC
+Malignant Plague=NEC
+Chaos Plague=NEC
+Gathering Dusk=NEC
+Venom of the Accursed Nest=NEC
+
+
+Evoker's Pyromantic Blade=WIZ
+Eruption of Telakemara=WIZ
+Ancient: Spear of Gelaqua=WIZ
+Force of Will=WIZ
+
+Hysteria=ENC
+Mental Contortion=ENC
+Speed of Ellowind=ENC
+
+Ancient: Spear of Molten=MAG
+Fickle Inferno=MAG
+Burning Bladestorm=MAG
+
+Heartshatter=RNG
+Frost of the Ascent=RNG
+Ancient: Focused Barrage of Arrows=RNG
+Embers of the Delve=RNG
+
+
+Insatiable Echo=ROG
+Ancient: Incursion=ROG
+Envenomed Blades Effect=ROG
+Frenzied Stabbing Discipline=ROG
+Twisted Chance Discipline=ROG
+
+Vigorous Axe Throw=BER
+Blood Pact Strike=BER
+Decapitation=BER
+
+Crystalpalm Discipline=MNK
+Ancient: Arachnid Fang=MNK
+Infusion of Thunder=MNK
+Infusion of Thunder Effect=MNK
+Eye Gouge=MNK
+
+Ancient: Drake's Breath=BST
+Gelid Claw=BST
+Ancient: Savage Ice=BST
+
+Vainglorious Shout=BRD
+Boastful Bellow=BRD
+Bladewhirl=BRD
+Chant of Lightning=BRD
+
+Blood of the Harbinger=SHD
+Shroud of the Accursed Strike=SHD
+Ancient: Spear of Lanys=SHD
+
+Lesser Pious Shield Effect=PAL
+Blessing of Life XII=PAL
+Wave of the Stillmoon=PAL
+Wave of Piety=PAL
+Wave of Trushar=PAL
+
+Fortitude Discipline=WAR
+Throat Jab=WAR
+Gut Punch=WAR
+Knee Strike=WAR
+Blast of Anger=WAR
+Battle Leap=WAR
+Jeer=WAR
+Roaring Hatred=WAR
+Maelstrom Blade=WAR

@@ -1,6 +1,7 @@
 using log4net;
 using System;
 using System.Collections.Generic;
+using System.Formats.Asn1;
 using System.Reflection;
 
 namespace EQLogParser
@@ -163,9 +164,19 @@ namespace EQLogParser
               var cast = new SpellCast { Caster = StringCache.GetOrAdd(player), Spell = StringCache.GetOrAdd(spellName), SpellData = spellData };
               RecordsStore.Instance.Add(cast, currentTime);
 
-              if (!spellData.IsUnknown && EQDataStore.Instance.GetSpellClass(spellData.Name) is { } theClass)
+
+              if (EQDataStore.Instance.GetSpellHighConfidence(spellName) is { } highConfClass)
               {
-                PlayerRegistry.Instance.SetActivePlayerClass(player, theClass, 2, currentTime);
+
+                PlayerRegistry.Instance.SetActivePlayerClass(player, highConfClass, 1, currentTime);
+              }
+              else
+              {
+                if (!spellData.IsUnknown && EQDataStore.Instance.GetSpellClass(spellData.Name) is { } theClass)
+                {
+                  PlayerRegistry.Instance.SetActivePlayerClass(player, theClass, 2, currentTime);
+                }
+
               }
 
               if (specialKey is not null && spellData is not null)

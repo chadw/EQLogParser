@@ -1,9 +1,11 @@
 using log4net;
+using Syncfusion.XlsIO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -59,6 +61,33 @@ namespace EQLogParser
     public const string Parry = "Parry";
     public const string Block = "Block";
     public const string Invulnerable = "Invulnerable";
+    public static Dictionary<string, string> ClassLongToShort = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {{"Warrior","WAR"},
+                                                    {"Cleric","CLR"},
+                                                    {"Paladin","PAL"},
+                                                    {"Ranger","RNG"},
+                                                    {"Shadow Knight","SHD" },
+                                                    {"Druid","DRU"},
+                                                    {"Monk","MNK"},
+                                                    {"Bard","BRD"},
+                                                    {"Rogue","ROG"},
+                                                    {"Shaman","SHM"},
+                                                    {"Necromancer","NEC"},
+                                                    {"Wizard","WIZ"},
+                                                    {"Magician","MAG"},
+                                                    {"Enchanter","ENC" },
+                                                    {"Beastlord","BST"},
+                                                    {"Berserker","BER"}};
+
+
+    public static Dictionary<string, string> ClassShortToLong = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    static Labels()
+    {
+      foreach (var pair in ClassLongToShort)
+      {
+        ClassShortToLong.Add(pair.Value, pair.Key);
+      }
+
+    }
   }
 
   internal class SpellAbbrvComparer : IEqualityComparer<SpellData>
@@ -122,6 +151,7 @@ namespace EQLogParser
     private static readonly SpellAbbrvComparer AbbrvComparer = new();
     private readonly HashSet<SpellData> _allSpellData = [];
     private readonly Dictionary<string, bool> _oldSpellNamesDb = [];
+    private readonly Dictionary<string, string> _spellsToClassHighConf = new Dictionary<string, string>();
     private readonly SpellTreeNode _landsOnOtherTree = new();
     private readonly SpellTreeNode _landsOnYouTree = new();
     private readonly SpellTreeNode _wearOffTree = new();
@@ -144,6 +174,7 @@ namespace EQLogParser
     private readonly HashSet<string> RankWords;
     private readonly Regex RomanRegex = new(@"^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2249:Consider using 'string.Contains' instead of 'string.IndexOf'", Justification = "<Pending>")]
     internal EQDataStore()
     {
       var spellList = new List<SpellData>();
@@ -194,6 +225,17 @@ namespace EQLogParser
 
       // Old Spell cache (EQEMU)
       ConfigUtil.ReadList(@"data\oldspells.txt").ForEach(line => _oldSpellNamesDb[line] = true);
+
+      ConfigUtil.ReadList(@"data\spells_high_confidence.txt").ForEach(line => {
+        Int32 locationOfEquals = line.IndexOf('=');
+        if(locationOfEquals>0)
+        {
+          string key = line.Substring(0, locationOfEquals);
+          string value = line.Substring(locationOfEquals + 1);
+          _spellsToClassHighConf[key] = Labels.ClassShortToLong[value];
+        }
+
+      });
 
       var procCache = new Dictionary<string, bool>();
       foreach (var line in ConfigUtil.ReadList(@"data\procs.txt").Where(line => line.Length > 0 && line[0] != '#'))
@@ -421,7 +463,14 @@ namespace EQLogParser
       }
       return 0;
     }
-
+    internal string GetSpellHighConfidence(string name)
+    {
+      if (!string.IsNullOrEmpty(name) && _spellsToClassHighConf.TryGetValue(name, out var result))
+      {
+        return result;
+      }
+      return null;
+    }
     internal string GetSpellClass(string name)
     {
       if (!string.IsNullOrEmpty(name) && _spellsToClass.TryGetValue(name, out var result))

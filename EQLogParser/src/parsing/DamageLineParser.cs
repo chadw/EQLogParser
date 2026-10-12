@@ -1,6 +1,7 @@
 using log4net;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -135,12 +136,13 @@ namespace EQLogParser
 
     private static DamageRecord ParseLine(bool checkLineType, LineData lineData, string[] split, int stop)
     {
+     
       DamageRecord record = null;
       var resist = SpellResist.Undefined;
       string attacker = null;
       string defender = null;
 
-      var isYou = split[0] is "You" or "Your";
+      var isYou = split[0] is "You" or "Your" or "your";
       long crippleDamageFix = -1;
       int byIndex = -1, forIndex = -1, pointsOfIndex = -1, endDamage = -1, byDamage = -1, extraIndex = -1;
       int fromDamage = -1, hasIndex = -1, haveIndex = -1, hitTypeIndex = -1, hitTypeAdd = -1, slainIndex = -1;
@@ -563,7 +565,7 @@ namespace EQLogParser
           attacker = spell;
         }
 
-        if (AppSettings.IsEmuParsingEnabled)
+        if (AppSettings.IsEmuParsingEnabled && attacker!="your")
         {
           // old emu
           (attacker, spell) = (spell, attacker);
@@ -720,6 +722,13 @@ namespace EQLogParser
         {
           subType = oldSpell[1..^1];
           subType = TextUtils.CapitalizeFirst(subType);
+
+          if (EQDataStore.Instance.GetSpellHighConfidence(subType) is { } highConfClass)
+          {
+            var currentTime = lineData.BeginTime;
+            PlayerRegistry.Instance.SetActivePlayerClass(attacker, highConfClass, 1, currentTime);
+          }
+
         }
 
         record = CreateDamageRecord(lineData, split, stop, attacker, defender, damage, Labels.Dd, subType);
@@ -961,6 +970,35 @@ namespace EQLogParser
 
       if (record is not null)
       {
+        if(record.Attacker.EndsWith("scorpse"))
+        {
+          string newattacker = record.Attacker.Replace("scorpse", "");
+          if(PlayerRegistry.Instance.IsPetOrPlayerOrMerc(newattacker))
+          {
+            record.Attacker = newattacker;
+          }
+        }
+       
+        //check for doppleganger pet functionality
+        if(record.Attacker.EndsWith("`s doppelganger"))
+        {
+          Int32 indexOfEndofPlayerName = record.Attacker.IndexOf("`s", 0);
+          if(indexOfEndofPlayerName>0)
+          {
+            string playerName = record.Attacker.Substring(0, indexOfEndofPlayerName);
+            PlayerRegistry.Instance.AddPetToPlayer(record.Attacker, playerName);
+          }
+        }
+        if (record.Attacker.EndsWith("`s Animated Corpse"))
+        {
+          Int32 indexOfEndofPlayerName = record.Attacker.IndexOf("`s", 0);
+          if (indexOfEndofPlayerName > 0)
+          {
+            string playerName = record.Attacker.Substring(0, indexOfEndofPlayerName);
+            PlayerRegistry.Instance.AddPetToPlayer(record.Attacker, playerName);
+          }
+        }
+
         if (_delayCritRecord is not null && (lineData.BeginTime - _delayCritRecord.BeginTime) <= 1 &&
           string.Equals(record.Attacker, _delayCritRecord.Record.Attacker, StringComparison.OrdinalIgnoreCase))
         {
@@ -1005,7 +1043,7 @@ namespace EQLogParser
           }
         }
       }
-
+     
       return record;
     }
 
