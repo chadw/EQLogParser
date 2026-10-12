@@ -56,6 +56,8 @@ Twisted Chance Discipline=ROG
 Vigorous Axe Throw=BER
 Blood Pact Strike=BER
 Decapitation=BER
+Decapitation IV=BER
+Decapitating Cleave=BER
 
 Crystalpalm Discipline=MNK
 Ancient: Arachnid Fang=MNK
@@ -87,7 +89,6 @@ Throat Jab=WAR
 Gut Punch=WAR
 Knee Strike=WAR
 Blast of Anger=WAR
-Battle Leap=WAR
 Jeer=WAR
 Roaring Hatred=WAR
 Maelstrom Blade=WAR
