@@ -37,8 +37,11 @@ Hysteria=ENC
 Mental Contortion=ENC
 Speed of Ellowind=ENC
 
-Ancient: Spear of Molten=MAG
+Spear of Ro=MAG
+Ancient: Spear of Molten Slag=MAG
+Fickle Fire=MAG
 Fickle Inferno=MAG
+Burning Bladegust=MAG
 Burning Bladestorm=MAG
 
 Heartshatter=RNG
@@ -52,6 +55,7 @@ Ancient: Incursion=ROG
 Envenomed Blades Effect=ROG
 Frenzied Stabbing Discipline=ROG
 Twisted Chance Discipline=ROG
+Vigorous Dagger Throw=ROG
 
 Vigorous Axe Throw=BER
 Blood Pact Strike=BER
