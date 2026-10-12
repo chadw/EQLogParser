@@ -309,6 +309,61 @@ namespace EQLogParser
       await Task.Delay(100);
     }
 
+    internal static async Task TryArchivePathAsync(string path)
+    {
+      try
+      {
+        if (string.IsNullOrEmpty(path) || !File.Exists(path)) return;
+
+        var type = ConfigUtil.GetSetting("LogManagementType", "Activity");
+        if (!ConfigUtil.IfSet("LogManagementEnabled") || !TypeActivity.Equals(type, StringComparison.OrdinalIgnoreCase)) return;
+
+        var file = Path.GetFileName(path);
+        if (string.IsNullOrEmpty(file) || !FileNameToArchiveRegex.IsMatch(file)) return;
+
+        var savedFileSize = ConfigUtil.GetSetting("LogManagementMinFileSize", "500M");
+        if (string.IsNullOrEmpty(savedFileSize)) return;
+        savedFileSize = savedFileSize.ToLower(null);
+        if (!ArchiveFileSizes.ContainsKey(savedFileSize)) return;
+
+        var savedFileAge = ConfigUtil.GetSetting("LogManagementMinFileAge", "1 Week");
+        if (string.IsNullOrEmpty(savedFileAge)) return;
+        savedFileAge = savedFileAge.ToLower(null);
+        if (!ArchiveFileAges.ContainsKey(savedFileAge)) return;
+
+        var fileInfo = new FileInfo(path);
+        var creationTime = fileInfo.CreationTimeUtc;
+
+        var ageDays = ArchiveFileAges[savedFileAge];
+        var sizeThreshold = ArchiveFileSizes[savedFileSize];
+
+        var qualifiesByAge = ageDays > 0 && creationTime <= DateTime.UtcNow.Subtract(TimeSpan.FromDays(ageDays));
+        var qualifiesBySize = sizeThreshold > 0 && fileInfo.Length >= sizeThreshold;
+
+        if (!qualifiesByAge && !qualifiesBySize) return;
+
+        if (Archiving.TryAdd(path, true))
+        {
+          try
+          {
+            await DoArchiveAsync(path);
+          }
+          catch (Exception e)
+          {
+            Log.Error($"Could not archive log file: {path}", e);
+          }
+          finally
+          {
+            Archiving.TryRemove(path, out _);
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+        Log.Error($"TryArchivePathAsync failed for {path}", ex);
+      }
+    }
+
     [GeneratedRegex(@"^eqlog_([^_]+)_(.+?)(?:-selected)?(?:_\d{8}(?:\d{4})?_\d+)?\.(txt|log)(?:\.gz)?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex TheFileNameToArchiveRegex();
   }

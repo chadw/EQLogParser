@@ -1083,6 +1083,9 @@ namespace EQLogParser
         CloseDamageOverlay(false);
         closeLogFile.IsEnabled = false;
         saveLogFile.IsEnabled = false;
+        // Try to archive the closed log immediately if it meets the configured criteria.
+        _ = LogArchiveManager.TryArchivePathAsync(closedFile);
+
         MainActions.FireLogLoadingEvent(closedFile, false);
       }
       catch (Exception)
