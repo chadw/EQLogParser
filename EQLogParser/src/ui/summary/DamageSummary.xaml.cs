@@ -1,5 +1,6 @@
 using FontAwesome5;
 using log4net;
+using Syncfusion.Data.Extensions;
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.UI.Xaml.TreeGrid;
 using System;
@@ -145,6 +146,10 @@ namespace EQLogParser
         menuItemSetAsPet.Header = $"Assign {selectedName} as Pet of";
         menuItemSetAsPlayer.Header = $"Set {selectedName} as Verified Player";
         menuItemSetPlayerClass.Header = $"Assign Default Class for {selectedName}";
+        //this is so the pet owners actually get updated while still on the table summary window
+        //otherwise you will add a verified player, go to the pet, and that player will not be in the window selection.
+        //also when loading a full file it doesn't show all the verified players that were found during loading. this corrects all of this.
+        CreatePetOwnerMenu();
       });
     }
 
@@ -155,6 +160,7 @@ namespace EQLogParser
     private void CreatePetOwnerMenu()
     {
       menuItemPetOptions.Children.Clear();
+     
       if (CurrentStats != null)
       {
         foreach (var stats in CurrentStats.StatsList.Where(stats => PlayerRegistry.Instance.IsVerifiedPlayer(stats.OrigName)).OrderBy(stats => stats.OrigName))
